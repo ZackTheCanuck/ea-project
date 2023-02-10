@@ -23,25 +23,16 @@ class graph():
         # extract the required fields to track neighbours and coordinates on map
         self.df_geodata['centroid'] = self.df_geodata.centroid
         self.df_geodata = self.df_geodata.set_geometry('centroid')
-        ids_list, neighbours_list, centroid_list = self.df_geodata['MOVEMENT_ID'].to_list(), self.df_geodata['NEIGHBORS'].to_list(), self.df_geodata['centroid'].to_list()
 
         # keep track of our edges to adjacent zones and the location of each zone's centroid
-        self.neighbours_dict = defaultdict(list)
-        self.zone_centroids  = {}
-        for id_num, neighbours, centroid in zip(ids_list, neighbours_list, centroid_list):
-            self.zone_centroids[int(id_num)] = (centroid.x, centroid.y)
-            ids_neighbours = list(map(int, neighbours.split(',')))
-            for neighbour in ids_neighbours:
-                self.neighbours_dict[id_num].append(neighbour)
+        self.neighbours_dict = {m_id: list(map(int, n.split(','))) for m_id, n in zip(self.df_geodata['MOVEMENT_ID'], self.df_geodata['NEIGHBORS'])}
+        self.zone_centroids  = {m_id: (c.x, c.y) for m_id, c in zip(self.df_geodata['MOVEMENT_ID'], self.df_geodata['centroid'])}
+
         nx.set_node_attributes(self.graph, self.zone_centroids, 'pos')
 
-        # extract the required fields to insert edges into graph
-        sources, destinations, travel_times, filter_by = self.df_edges['sourceid'].to_list(), self.df_edges['dstid'].to_list(), self.df_edges[weights].to_list(), self.df_edges['month'].to_list()
-        weight_values = []
-        for s, d, t, f in zip(sources, destinations, travel_times, filter_by):
-            if (int(f) == self.filter) and (d in self.neighbours_dict[s]):
-                edge_info = (s, d, t)
-                weight_values.append(edge_info)
+        filtered_edges = self.df_edges.loc[(self.df_edges['month'] == self.filter)]
+        weight_values = [(s, d, w) for s, d, w in zip(filtered_edges['sourceid'], filtered_edges['dstid'], filtered_edges[weights]) if (d in self.neighbours_dict[s])]
+
         self.graph.add_weighted_edges_from(weight_values, weight=weights)
 
     def build(self):
@@ -65,7 +56,6 @@ def main():
     toronto_graph = graph(json_geodata, neighbourhood_travel_times, 1)
     toronto_graph.build()
     toronto_neighbours = toronto_graph.get_neighbours()
-    print(toronto_neighbours)
     toronto_graph.display()
 
 
