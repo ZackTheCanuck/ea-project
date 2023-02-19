@@ -1,4 +1,4 @@
-from collections import defaultdict
+import random
 
 import geopandas as gpd
 import matplotlib.pyplot as plt
@@ -40,14 +40,33 @@ class graph():
         self.format_graph()
         print(self.graph)
 
-    def display(self):
+    def display_original(self):
         ax = self.df_geodata['geometry'].plot(color='#5a7d4d')
         nx.draw(self.graph, ax=ax, pos=self.zone_centroids, node_size=180, node_color='lightblue',
             linewidths=0.25, font_size=8, with_labels=True, arrowstyle='-')
         plt.show()
 
+    def get_nodes(self):
+        return self.graph.nodes
+
     def get_neighbours(self):
         return self.neighbours_dict
+    
+    # TODO: We may be able to see which method tends to be fastest by using timeit
+    def bellman_ford(self, start_node, end_node):
+        print(f'Calculating shortest path from {start_node} -> {end_node} with Bellman-Ford\'s algorithm')
+        path = nx.bellman_ford_path(G=self.graph, source=start_node, target=end_node, weight='mean_travel_time')
+        return path
+    
+    def display_shortest_path(self, start, end, method):
+        ax = self.df_geodata['geometry'].plot(color='#5a7d4d')
+        nx.draw(self.graph, ax=ax, pos=self.zone_centroids, node_size=180, node_color='lightblue',
+            linewidths=0.25, font_size=8, with_labels=True, arrowstyle='-')
+        shortest_path = method(start, end)
+        path_edges    = set((zip(shortest_path, shortest_path[1:])))
+        nx.draw_networkx_nodes(self.graph, pos=self.zone_centroids, nodelist=shortest_path, node_size=180, node_color='r')
+        nx.draw_networkx_edges(self.graph, pos=self.zone_centroids, edgelist=path_edges, edge_color='r', arrowstyle='simple', width=0.25)
+        plt.show()
 
 
 def main():
@@ -55,8 +74,9 @@ def main():
     neighbourhood_travel_times = 'project_code/csv_files/toronto-neighbourhoods-2020-1-OnlyWeekdays-MonthlyAggregate.csv'
     toronto_graph = graph(json_geodata, neighbourhood_travel_times, 1)
     toronto_graph.build()
-    toronto_neighbours = toronto_graph.get_neighbours()
-    toronto_graph.display()
+    start, end = random.sample(list(toronto_graph.get_nodes()), 2)
+    # toronto_graph.display_original()
+    toronto_graph.display_shortest_path(start, end, toronto_graph.bellman_ford)
 
 
 if __name__ == "__main__":
