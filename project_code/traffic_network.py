@@ -3,6 +3,7 @@ import random
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import networkx as nx
+import numpy as np
 import pandas as pd
 
 
@@ -52,25 +53,34 @@ class graph():
     def get_neighbours(self):
         return self.neighbours_dict
     
+    # this gives us near-optimal routing, our (simplified) version of randDijkstra
+    def create_edge_variance(self):
+        for _, _, edge_weight in self.graph.edges(data=True):
+            edge_weight['mean_travel_time'] = round(abs(np.random.normal((edge_weight['mean_travel_time']), 0.2 * edge_weight['mean_travel_time'])), 2)
+    
     # TODO: We may be able to see which method tends to be fastest by using timeit
     def bellman_ford(self, start_node, end_node):
         print(f'Calculating shortest path from {start_node} -> {end_node} with Bellman-Ford\'s algorithm')
+        self.create_edge_variance()
         path = nx.bellman_ford_path(G=self.graph, source=start_node, target=end_node, weight='mean_travel_time')
         return path
     
     def dijkstra(self, start_node, end_node):
         print(f'Calculating shortest path from {start_node} -> {end_node} with Dijkstra\'s algorithm')
+        self.create_edge_variance()
         path = nx.dijkstra_path(G=self.graph, source=start_node, target=end_node, weight='mean_travel_time')
         return path
     
     def floyd_warshall(self, start_node, end_node):
         print(f'Calculating shortest path from {start_node} -> {end_node} with Floyd-Warshall\'s algorithm')
+        self.create_edge_variance()
         predecessors, _ = nx.floyd_warshall_predecessor_and_distance(G=self.graph, weight='mean_travel_time')
         path = nx.reconstruct_path(start_node, end_node, predecessors)
         return path
     
     def a_star(self, start_node, end_node):
         print(f'Calculating shortest path from {start_node} -> {end_node} with A* algorithm')
+        self.create_edge_variance()
         path = nx.astar_path(G=self.graph, source=start_node, target=end_node, weight='mean_travel_time')
         return path
     
@@ -84,7 +94,10 @@ class graph():
             shortest_path = method(start, end)
             path_edges    = set(zip(shortest_path, shortest_path[1:]))
             for n1, n2 in path_edges:
-                self.graph[n1][n2][0]['mean_travel_time'] *= 2
+                print(f'{n1}->{n2}, weight = ' + str(self.graph[n1][n2][0]['mean_travel_time']))
+                # TODO: apply a function that increases travel time as cars take the provided path - simple version commented out below
+                # rand_val = random.random()
+                # self.graph[n1][n2][0]['mean_travel_time'] *= (3*rand_val)
             nx.draw_networkx_nodes(self.graph, pos=self.zone_centroids, nodelist=shortest_path, node_size=180, node_color=line_colors[x], alpha=0.6)
             nx.draw_networkx_edges(self.graph, pos=self.zone_centroids, edgelist=path_edges, edge_color=line_colors[x], alpha=0.6, arrowstyle='simple', width=0.25)
         # end of temp code
@@ -96,7 +109,8 @@ def main():
     neighbourhood_travel_times = 'project_code/csv_files/toronto-neighbourhoods-2020-1-OnlyWeekdays-MonthlyAggregate.csv'
     toronto_graph = graph(json_geodata, neighbourhood_travel_times, 1)
     toronto_graph.build()
-    start, end = random.sample(list(toronto_graph.get_nodes()), 2)
+    # start, end = random.sample(list(toronto_graph.get_nodes()), 2)
+    start, end = 123, 138
     # toronto_graph.display_original()
     toronto_graph.display_shortest_path(start, end, toronto_graph.bellman_ford)
 
