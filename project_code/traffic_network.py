@@ -58,14 +58,36 @@ class graph():
         path = nx.bellman_ford_path(G=self.graph, source=start_node, target=end_node, weight='mean_travel_time')
         return path
     
+    def dijkstra(self, start_node, end_node):
+        print(f'Calculating shortest path from {start_node} -> {end_node} with Dijkstra\'s algorithm')
+        path = nx.dijkstra_path(G=self.graph, source=start_node, target=end_node, weight='mean_travel_time')
+        return path
+    
+    def floyd_warshall(self, start_node, end_node):
+        print(f'Calculating shortest path from {start_node} -> {end_node} with Floyd-Warshall\'s algorithm')
+        predecessors, _ = nx.floyd_warshall_predecessor_and_distance(G=self.graph, weight='mean_travel_time')
+        path = nx.reconstruct_path(start_node, end_node, predecessors)
+        return path
+    
+    def a_star(self, start_node, end_node):
+        print(f'Calculating shortest path from {start_node} -> {end_node} with A* algorithm')
+        path = nx.astar_path(G=self.graph, source=start_node, target=end_node, weight='mean_travel_time')
+        return path
+    
     def display_shortest_path(self, start, end, method):
         ax = self.df_geodata['geometry'].plot(color='#5a7d4d')
         nx.draw(self.graph, ax=ax, pos=self.zone_centroids, node_size=180, node_color='lightblue',
             linewidths=0.25, font_size=8, with_labels=True, arrowstyle='-')
-        shortest_path = method(start, end)
-        path_edges    = set((zip(shortest_path, shortest_path[1:])))
-        nx.draw_networkx_nodes(self.graph, pos=self.zone_centroids, nodelist=shortest_path, node_size=180, node_color='r')
-        nx.draw_networkx_edges(self.graph, pos=self.zone_centroids, edgelist=path_edges, edge_color='r', arrowstyle='simple', width=0.25)
+        # start: this code works but is temporary and purposely shows 3 different possible paths
+        line_colors = ['red', 'blue', 'orange']
+        for x in range(3):
+            shortest_path = method(start, end)
+            path_edges    = set(zip(shortest_path, shortest_path[1:]))
+            for n1, n2 in path_edges:
+                self.graph[n1][n2][0]['mean_travel_time'] *= 2
+            nx.draw_networkx_nodes(self.graph, pos=self.zone_centroids, nodelist=shortest_path, node_size=180, node_color=line_colors[x], alpha=0.6)
+            nx.draw_networkx_edges(self.graph, pos=self.zone_centroids, edgelist=path_edges, edge_color=line_colors[x], alpha=0.6, arrowstyle='simple', width=0.25)
+        # end of temp code
         plt.show()
 
 
