@@ -7,30 +7,47 @@ import numpy
 import parent_selection
 import recombination
 import survivor_selection
+import traffic_network
 
 
 def main():
    
-    popsize          = "unknown"
-    mating_pool_size = "unknown"
-    xover_rate       = "unknown"
-    mut_rate         = "unknown"
-    gen_limit        = "unknown"
+    # building our graph
+    toronto_graph = traffic_network.graph()
+    toronto_graph.build()
 
-    # initialize population
-    gen = 0 # initialize the generation counter
+    # radomly picking a start and end node to run on
+    start_node, end_node = random.sample(list(toronto_graph.get_nodes()), 2)
+    
+    # hyperparameters
+    popsize              = 5
+    routes_per_member    = 3
+    xover_rate           = "unknown"
+    mut_rate             = "unknown"
+    gen_limit            = 300
+
+    # initialize population - works
     population = []
-    fitness = []
+    for _ in range(popsize):
+        individual = [toronto_graph.dijkstra(start_node, end_node) for _ in range(routes_per_member)]
+        population.append(individual)
+    print(population)
+        
+    # calculate fitnesses of original population - works
+    route_fitnesses      = [[evaluation.fitness(toronto_graph, route) for route in individual] for individual in population]
+    individual_fitnesses = [round(sum(individual_routes), 2) for individual_routes in route_fitnesses]
+    print(route_fitnesses)
+    print(individual_fitnesses)
 
+    # initialize the generation counter
+    gen = 0
     # evolution begins
     while gen < gen_limit:
         
-        # pick parents 
-
-        # randomly pair up parents
+        # pick parents: repeat √︁(𝜇^2 − 𝜇/2) times
+        # select two individuals uniformly at random
     
         # reproduction
-        
         
         # generate offspring
         

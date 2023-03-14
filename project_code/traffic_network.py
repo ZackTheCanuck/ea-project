@@ -8,7 +8,9 @@ import pandas as pd
 
 
 class graph():
-    def __init__(self, geodata, edge_weights_csv, filter_parameter=1) -> None:
+    def __init__(self, geodata='project_code/json_files/toronto_neighbourhoods.json', 
+                 edge_weights_csv='project_code/csv_files/toronto-neighbourhoods-2020-1-OnlyWeekdays-MonthlyAggregate.csv',
+                 filter_parameter=1) -> None:
         self.df_geodata    = gpd.read_file(geodata)
         self.df_edges      = pd.read_csv(edge_weights_csv)
         self.graph         = nx.MultiDiGraph()
@@ -62,27 +64,27 @@ class graph():
     
     # TODO: We may be able to see which method tends to be fastest by using timeit
     def bellman_ford(self, start_node, end_node):
-        print(f'Calculating shortest path from {start_node} -> {end_node} with Bellman-Ford\'s algorithm')
+        #print(f'Calculating shortest path from {start_node} -> {end_node} with Bellman-Ford\'s algorithm')
         # edge_variance_graph = self.create_edge_variance()
         # path = nx.bellman_ford_path(G=edge_variance_graph, source=start_node, target=end_node, weight='mean_travel_time')
         path = nx.bellman_ford_path(G=self.graph, source=start_node, target=end_node, weight='mean_travel_time')
         return path
     
     def dijkstra(self, start_node, end_node):
-        print(f'Calculating shortest path from {start_node} -> {end_node} with Dijkstra\'s algorithm')
+        #print(f'Calculating shortest path from {start_node} -> {end_node} with Dijkstra\'s algorithm')
         edge_variance_graph = self.create_edge_variance()
         path = nx.dijkstra_path(G=edge_variance_graph, source=start_node, target=end_node, weight='mean_travel_time')
         return path
     
     def floyd_warshall(self, start_node, end_node):
-        print(f'Calculating shortest path from {start_node} -> {end_node} with Floyd-Warshall\'s algorithm')
+        #print(f'Calculating shortest path from {start_node} -> {end_node} with Floyd-Warshall\'s algorithm')
         edge_variance_graph = self.create_edge_variance()
         predecessors, _ = nx.floyd_warshall_predecessor_and_distance(G=edge_variance_graph, weight='mean_travel_time')
         path = nx.reconstruct_path(start_node, end_node, predecessors)
         return path
     
     def a_star(self, start_node, end_node):
-        print(f'Calculating shortest path from {start_node} -> {end_node} with A* algorithm')
+        #print(f'Calculating shortest path from {start_node} -> {end_node} with A* algorithm')
         edge_variance_graph = self.create_edge_variance()
         path = nx.astar_path(G=edge_variance_graph, source=start_node, target=end_node, weight='mean_travel_time')
         return path
@@ -119,18 +121,3 @@ class graph():
         print(f'Total Travel Time        = {sum(paths_travel_times)}')
         # end of temp code
         plt.show()
-
-
-def main():
-    json_geodata = 'project_code/json_files/toronto_neighbourhoods.json'
-    neighbourhood_travel_times = 'project_code/csv_files/toronto-neighbourhoods-2020-1-OnlyWeekdays-MonthlyAggregate.csv'
-    toronto_graph = graph(json_geodata, neighbourhood_travel_times, 1)
-    toronto_graph.build()
-    # start, end = random.sample(list(toronto_graph.get_nodes()), 2)
-    start, end = 123, 138
-    # toronto_graph.display_original()
-    toronto_graph.display_shortest_path(start, end, toronto_graph.bellman_ford)
-
-
-if __name__ == "__main__":
-    main()
