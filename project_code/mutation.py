@@ -1,13 +1,13 @@
 # mutation methods
 
-def new_route():
-    return
+def new_route(route):
+    return route
 
-def random_p():
-    return
+def random_p(route):
+    return route
 
-def link_wp():
-    return
+def link_wp(route):
+    return route
 
-def ex_segment():
-    return
+def ex_segment(route):
+    return route

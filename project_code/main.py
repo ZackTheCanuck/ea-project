@@ -1,3 +1,4 @@
+import copy
 import math
 import random
 
@@ -23,9 +24,9 @@ def main():
     # hyperparameters
     popsize              = 5
     routes_per_member    = 3
-    xover_rate           = "unknown"
     xover_strategy       = recombination.exhaustive_crossover
-    mut_rate             = "unknown"
+    mut_ops              = (mutation.new_route, mutation.random_p, mutation.link_wp, mutation.ex_segment)
+    mut_ops_weights      = [30, 60, 30, 15]
     gen_limit            = 300
 
     # initialize population - works
@@ -54,20 +55,33 @@ def main():
             crossover_offspring.append(single_crossover_offspring)
         # print(f'{crossover_offspring}, num pairs = {len(crossover_offspring)}')
     
-        # reproduction
-        
-        # generate offspring
-        
-        # recombination
-            
-        # mutation
+        population_copy = copy.deepcopy(population)
 
-        # organize the population of next generation
+        for individual in population_copy:
+            num_mutations = max(1, numpy.random.poisson(1.5))
+            mutations_to_perform = random.choices(mut_ops, weights=mut_ops_weights, k=num_mutations)
+            # TODO: update mut_ops_weights over generations according to the paper
+            if mutation.ex_segment in mutations_to_perform:
+                mutations_to_perform = [mutation.ex_segment]
+            # apply mutations
+            for mutation_operator in mutations_to_perform:
+                individual = mutation_operator(individual)
+        
+        # our fitness is trying to be minimized so we use min here
+        # TODO: from here to the end of main() will need to be updated to use fitness values,
+        # I just plugged in our current lists to get the pseudocode in
+
+        # if min(population) < min(crossover_offspring):
+        #     crossover_offspring = []
+
+        # population = sorted(crossover_offspring + population_copy + population)[:popsize]
         
         gen = gen + 1  # update the generation counter
         
     # evolution ends
     
+    #print(min(population))
+
     # print solutions
 
 
