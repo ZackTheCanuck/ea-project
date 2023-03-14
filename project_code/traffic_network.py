@@ -1,4 +1,4 @@
-import random
+import copy
 
 import geopandas as gpd
 import matplotlib.pyplot as plt
@@ -55,33 +55,36 @@ class graph():
     
     # this gives us near-optimal routing, our (simplified) version of randDijkstra
     def create_edge_variance(self):
-        for _, _, edge_weight in self.graph.edges(data=True):
+        graph_copy = copy.deepcopy(self.graph)
+        for _, _, edge_weight in graph_copy.edges(data=True):
             edge_weight['mean_travel_time'] = round(abs(np.random.normal((edge_weight['mean_travel_time']), 0.2 * edge_weight['mean_travel_time'])), 2)
+        return graph_copy
     
     # TODO: We may be able to see which method tends to be fastest by using timeit
     def bellman_ford(self, start_node, end_node):
         print(f'Calculating shortest path from {start_node} -> {end_node} with Bellman-Ford\'s algorithm')
-        self.create_edge_variance()
+        # edge_variance_graph = self.create_edge_variance()
+        # path = nx.bellman_ford_path(G=edge_variance_graph, source=start_node, target=end_node, weight='mean_travel_time')
         path = nx.bellman_ford_path(G=self.graph, source=start_node, target=end_node, weight='mean_travel_time')
         return path
     
     def dijkstra(self, start_node, end_node):
         print(f'Calculating shortest path from {start_node} -> {end_node} with Dijkstra\'s algorithm')
-        self.create_edge_variance()
-        path = nx.dijkstra_path(G=self.graph, source=start_node, target=end_node, weight='mean_travel_time')
+        edge_variance_graph = self.create_edge_variance()
+        path = nx.dijkstra_path(G=edge_variance_graph, source=start_node, target=end_node, weight='mean_travel_time')
         return path
     
     def floyd_warshall(self, start_node, end_node):
         print(f'Calculating shortest path from {start_node} -> {end_node} with Floyd-Warshall\'s algorithm')
-        self.create_edge_variance()
-        predecessors, _ = nx.floyd_warshall_predecessor_and_distance(G=self.graph, weight='mean_travel_time')
+        edge_variance_graph = self.create_edge_variance()
+        predecessors, _ = nx.floyd_warshall_predecessor_and_distance(G=edge_variance_graph, weight='mean_travel_time')
         path = nx.reconstruct_path(start_node, end_node, predecessors)
         return path
     
     def a_star(self, start_node, end_node):
         print(f'Calculating shortest path from {start_node} -> {end_node} with A* algorithm')
-        self.create_edge_variance()
-        path = nx.astar_path(G=self.graph, source=start_node, target=end_node, weight='mean_travel_time')
+        edge_variance_graph = self.create_edge_variance()
+        path = nx.astar_path(G=edge_variance_graph, source=start_node, target=end_node, weight='mean_travel_time')
         return path
     
     def display_shortest_path(self, start, end, method):
@@ -90,16 +93,30 @@ class graph():
             linewidths=0.25, font_size=8, with_labels=True, arrowstyle='-')
         # start: this code works but is temporary and purposely shows 3 different possible paths
         line_colors = ['red', 'blue', 'orange']
+        paths_travel_times = []
+        paths_routes = []
         for x in range(3):
+            path_travel_time = 0
             shortest_path = method(start, end)
             path_edges    = set(zip(shortest_path, shortest_path[1:]))
+            paths_routes.append(shortest_path)
             for n1, n2 in path_edges:
                 print(f'{n1}->{n2}, weight = ' + str(self.graph[n1][n2][0]['mean_travel_time']))
+                path_travel_time += self.graph[n1][n2][0]['mean_travel_time']
                 # TODO: apply a function that increases travel time as cars take the provided path - simple version commented out below
                 # rand_val = random.random()
                 # self.graph[n1][n2][0]['mean_travel_time'] *= (3*rand_val)
+                self.graph[n1][n2][0]['mean_travel_time'] *= 3
+            paths_travel_times.append(path_travel_time)
             nx.draw_networkx_nodes(self.graph, pos=self.zone_centroids, nodelist=shortest_path, node_size=180, node_color=line_colors[x], alpha=0.6)
             nx.draw_networkx_edges(self.graph, pos=self.zone_centroids, edgelist=path_edges, edge_color=line_colors[x], alpha=0.6, arrowstyle='simple', width=0.25)
+        print(f'Red Route    = {paths_routes[0]}')
+        print(f'Red Route Travel Time    = {paths_travel_times[0]}')
+        print(f'Blue Route   = {paths_routes[1]}')
+        print(f'Blue Route Travel Time   = {paths_travel_times[1]}')
+        print(f'Yellow Route = {paths_routes[2]}')
+        print(f'Yellow Route Travel Time = {paths_travel_times[2]}')
+        print(f'Total Travel Time        = {sum(paths_travel_times)}')
         # end of temp code
         plt.show()
 
