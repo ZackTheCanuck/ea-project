@@ -1,3 +1,4 @@
+import math
 import random
 
 import evaluation
@@ -23,6 +24,7 @@ def main():
     popsize              = 5
     routes_per_member    = 3
     xover_rate           = "unknown"
+    xover_strategy       = recombination.exhaustive_crossover
     mut_rate             = "unknown"
     gen_limit            = 300
 
@@ -31,21 +33,26 @@ def main():
     for _ in range(popsize):
         individual = [toronto_graph.dijkstra(start_node, end_node) for _ in range(routes_per_member)]
         population.append(individual)
-    print(population)
+    #print(population)
         
     # calculate fitnesses of original population - works
     route_fitnesses      = [[evaluation.fitness(toronto_graph, route) for route in individual] for individual in population]
     individual_fitnesses = [round(sum(individual_routes), 2) for individual_routes in route_fitnesses]
-    print(route_fitnesses)
-    print(individual_fitnesses)
+    #print(route_fitnesses)
+    #print(individual_fitnesses)
 
     # initialize the generation counter
     gen = 0
     # evolution begins
     while gen < gen_limit:
-        
-        # pick parents: repeat √︁(𝜇^2 − 𝜇/2) times
-        # select two individuals uniformly at random
+        # perform crossovers
+        crossover_offspring = []
+        for _ in range(round(math.sqrt(popsize**2 - popsize/2))):
+            selected_parents = random.sample(population, 2)
+            # once we code xovers this should work
+            single_crossover_offspring = xover_strategy(selected_parents)
+            crossover_offspring.append(single_crossover_offspring)
+        # print(f'{crossover_offspring}, num pairs = {len(crossover_offspring)}')
     
         # reproduction
         

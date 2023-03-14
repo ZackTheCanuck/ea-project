@@ -1,7 +1,7 @@
 # recombination operators
 
-def exhaustive_crossover():
-    return
+def exhaustive_crossover(parents):
+    return parents
 
 def greedy_crossover():
     return
