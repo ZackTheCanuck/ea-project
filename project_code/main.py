@@ -29,9 +29,15 @@ def main():
     gen_limit            = 1
 
     # initialize population and fitnesses - works
-    population   = []
+    population = []
+    # all_unique_routes = P_st from paper, we need to use list bc this needs to be ordered
+    all_unique_routes = []
     for _ in range(popsize):
-        population.append(population_individual.individual(toronto_graph, start_node, end_node))
+        ind = population_individual.individual(toronto_graph, start_node, end_node)
+        population.append(ind)
+        for route in ind.routes.values():
+            if route not in all_unique_routes:
+                all_unique_routes.append(route)
         
     # fitnesses of individuals calculated on the fly - works
 
@@ -58,7 +64,7 @@ def main():
                 mutations_to_perform = [mutation.ex_segment]
             # apply mutations
             for mutation_operator in mutations_to_perform:
-                individual = mutation_operator(individual)
+                individual = mutation_operator(individual, all_unique_routes, toronto_graph, start_node, end_node)
                 
         population_dict          = {i:i.get_overall_fitness() for i in population}
         mutated_population_dict  = {i:i.get_overall_fitness() for i in mutated_population}
