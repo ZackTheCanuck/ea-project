@@ -1,8 +1,6 @@
-import copy
-
 # recombination operators
 def exhaustive_crossover(parents):
-    return copy.deepcopy(parents)
+    return parents
 
 def greedy_crossover():
     return

@@ -8,7 +8,7 @@ import numpy as np
 def create_edge_variance(graph):
     graph_copy = copy.deepcopy(graph)
     for _, _, edge_weight in graph_copy.edges(data=True):
-        edge_weight['mean_travel_time'] = round(abs(np.random.normal((edge_weight['mean_travel_time']), 0.2 * edge_weight['mean_travel_time'])), 2)
+        edge_weight['mean_travel_time'] = round(abs(np.random.normal((edge_weight['mean_travel_time']), 0.8 * edge_weight['mean_travel_time'])), 2)
     return graph_copy
 
 

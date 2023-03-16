@@ -1,6 +1,7 @@
 import copy
 import math
 import random
+from operator import itemgetter
 
 import evaluation
 import graph_helpers
@@ -35,7 +36,7 @@ def main():
     for _ in range(popsize):
         ind = population_individual.individual(toronto_graph, start_node, end_node)
         population.append(ind)
-        for route in ind.routes.values():
+        for route in ind.routes:
             if route not in all_unique_routes:
                 all_unique_routes.append(route)
         
@@ -48,7 +49,7 @@ def main():
         # perform crossovers
         crossover_offspring = []
         for _ in range(round(math.sqrt(popsize**2 - popsize/2))):
-            selected_parents = random.sample(population, 2)
+            selected_parents = copy.deepcopy(random.sample(population, 2))
             # once we code xovers this should work
             single_crossover_offspring = xover_strategy(selected_parents)
             crossover_offspring.extend(single_crossover_offspring)
@@ -66,26 +67,18 @@ def main():
             for mutation_operator in mutations_to_perform:
                 individual = mutation_operator(individual, all_unique_routes, toronto_graph, start_node, end_node)
                 
-        population_dict          = {i:i.get_overall_fitness() for i in population}
-        mutated_population_dict  = {i:i.get_overall_fitness() for i in mutated_population}
-        crossover_offspring_dict = {i:i.get_overall_fitness() for i in crossover_offspring}
+        population_fitnesses          = [(i.get_overall_fitness(), i) for i in population]
+        mutated_population_fitnesses  = [(i.get_overall_fitness(), i) for i in mutated_population]
+        crossover_offspring_fitnesses = [(i.get_overall_fitness(), i) for i in crossover_offspring]
 
-        #print(len(population_dict), len(mutated_population_dict), len(crossover_offspring_dict))
-        
         # our fitness is trying to be minimized so we use min here
-        if min(population_dict.values()) < min(crossover_offspring_dict.values()):
-            print('Dropping all xovers')
-            crossover_offspring = []
+        if min(population_fitnesses, key=itemgetter(0))[0] < min(crossover_offspring_fitnesses, key=itemgetter(0))[0]:
+            crossover_offspring_fitnesses = []
 
-        #print(len(population_dict), len(mutated_population_dict), len(crossover_offspring_dict))
-        total_population_dict = dict(population_dict)
-        total_population_dict.update(mutated_population_dict)
-        total_population_dict.update(crossover_offspring_dict)
-        #print(len(total_population_dict))
+        total_population = population_fitnesses + mutated_population_fitnesses + crossover_offspring_fitnesses
 
-        sorted_total_population = sorted(total_population_dict.items(), key=lambda item:item[1])
-        population = [list(ind)[0] for ind in sorted_total_population][:popsize]
-        #print(len(population))
+        sorted_total_population = sorted(total_population, key=itemgetter(0))
+        population = [ind[1] for ind in sorted_total_population][:popsize]
         
         gen = gen + 1  # update the generation counter
         
