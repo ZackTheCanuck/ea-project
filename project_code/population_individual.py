@@ -29,3 +29,6 @@ class individual():
         edge_travel_times  = [self.graph[edge[0]][edge[1]][0]['mean_travel_time'] * edge_flows[edge] for edge in all_edges_combined]
         overall_fitness    = sum(edge_travel_times)
         return round(overall_fitness, 2)
+    
+    def __str__(self):
+        return f"Individual object with routes: {self.routes}"
