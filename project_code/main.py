@@ -18,10 +18,11 @@ from initialization import initialize_populations, migrate
 def main():
    
     # building our graph
-    toronto_graph = graph_helpers.build_graph()
+    toronto_graph, geodata = graph_helpers.build_graph()
 
-    # radomly picking a start and end node to run on
+    # randomly picking a start and end node to run on
     start_node, end_node = random.sample(list(toronto_graph.nodes), 2)
+    print(f'Starting run from {start_node} -> {end_node}')
     
     # hyperparameters
     popsize              = 5
@@ -95,7 +96,8 @@ def main():
     # print solutions
     for i, population in enumerate(populations):
         best_solution = min(population, key=lambda x: x.get_overall_fitness())
-        print(f"Best solution from population {i + 1}: {best_solution}")
+        print(f"Best solution from population {i + 1}: {best_solution}, fitness = {best_solution.get_overall_fitness()}")
+        #best_solution.display(geodata)
 
 
 # end of main

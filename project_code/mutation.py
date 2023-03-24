@@ -1,8 +1,9 @@
 # mutation methods
+import random
+
 import ea_helpers
 import numpy as np
 import shortest_path_algorithms
-import random
 
 
 # select a route to mutate inversely proportional to how often the route appears in the individual
@@ -33,12 +34,15 @@ def random_p(individual, all_unique_routes, graph, start_node, end_node):
         selected_routes.append(all_unique_routes[i])
     for route in selected_routes:
         # Choose a start node and destination node
-        start_index = random.randint(0, len(route) - 1)
         route_length = len(route)
-        end_index = start_index + round(np.random.normal(0.25 * route_length, 0.5 * route_length))
-        end_index = min(max(end_index, 0), route_length - 1)  # make sure end is in range
+        start_index = random.randint(0, route_length - 2)
+        max_subroute_length = route_length - start_index
+        subroute_length = max(min(abs(int(np.random.normal(0.25 * route_length, 0.5 * route_length))), max_subroute_length), 2)
+        end_index = start_index + subroute_length - 1
         # Replace subsegment with a new random route
-        new_route = shortest_path_algorithms.dijkstra(graph, route[start_index], route[end_index])
+        new_subroute = shortest_path_algorithms.dijkstra(graph, route[start_index], route[end_index])
+        new_route = route[:start_index] + new_subroute[:-1] + route[end_index:]
+        new_route = ea_helpers.remove_cycles(new_route)
         individual.routes[individual.routes.index(route)] = new_route
 
     # Update all_unique_routes with new routes
@@ -48,13 +52,8 @@ def random_p(individual, all_unique_routes, graph, start_node, end_node):
 
     return individual
 
-
-
-
-
-
-
 def link_wp(individual, all_routes, graph, start, end):
+
     return individual
 
 def ex_segment(individual, all_routes, graph, start, end):
