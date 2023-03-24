@@ -13,9 +13,9 @@ class individual():
     def __init__(self, graph, start, end) -> None:
         self.graph        = graph
         self.routes       = [shortest_path_algo(graph, start, end) for _ in range(routes_per_individual)]
-        self.edge_weights = [self.calculate_edge_weights(route) for route in self.routes]
+        self.edge_weights = [self.get_edge_weights(route) for route in self.routes]
         
-    def calculate_edge_weights(self, route):
+    def get_edge_weights(self, route):
         route_edges = zip(route, route[1:])
         edge_weights = []
         for node_1, node_2 in route_edges:

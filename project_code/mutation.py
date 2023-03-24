@@ -52,7 +52,44 @@ def random_p(individual, all_unique_routes, graph, start_node, end_node):
 
     return individual
 
-def link_wp(individual, all_routes, graph, start, end):
+# instead of using capacity (which our data doesn't have), we take the sum of our fitnesses along each edge going out of each node,
+# except the one we are currently using, and choose proportional to the fastest (lowest fitness) node
+def link_wp(individual, all_unique_routes, graph, start, end):
+    # Choose a random subset of routes proportional to their inverse traffic flow
+    probabilities = ea_helpers.get_inverse_traffic_flow_probabilities(individual, all_unique_routes)
+    # Select a random subset of route indices from all_unique_routes based on probabilities
+    selected_routes_indices = np.random.choice(len(all_unique_routes), size=len(individual.routes) // 2, replace=False, p=probabilities)
+    # Get the routes corresponding to the selected indices
+    selected_routes = []
+    for i in selected_routes_indices:
+        selected_routes.append(all_unique_routes[i])
+    for route in selected_routes:
+        route_edges = list(zip(route, route[1:]))
+        start_node_probs = []
+        for i in range(len(route_edges)):
+            node_out_edges = individual.graph.out_edges(route[i])
+            outbound_travel_times = [individual.graph[edge[0]][edge[1]][0]['mean_travel_time'] for edge in node_out_edges if edge not in route_edges]
+            start_node_probs.append(sum(outbound_travel_times))
+        start_node_probs.append(0) # no point in starting at our goal node, so set the probability to 0
+        percentages = [prob/sum(start_node_probs) for prob in start_node_probs]
+
+        # Choose a start node and destination node
+        route_length = len(route)
+        # this hack lets us take the 2 indexes with the lowest outbound travel times
+        non_selected_indexes = np.random.choice(route_length, route_length - 2, replace=False, p=percentages)
+        selected_indexes = [i for i in range(route_length) if i not in non_selected_indexes]
+        start_index  = min(selected_indexes)
+        end_index    = max(selected_indexes)
+        # Replace subsegment with a new random route
+        new_subroute = shortest_path_algorithms.dijkstra(graph, route[start_index], route[end_index])
+        new_route    = route[:start_index] + new_subroute[:-1] + route[end_index:]
+        new_route    = ea_helpers.remove_cycles(new_route)
+        individual.routes[individual.routes.index(route)] = new_route
+
+    # Update all_unique_routes with new routes
+    for route in individual.routes:
+        if route not in all_unique_routes:
+            all_unique_routes.append(route)
 
     return individual
 

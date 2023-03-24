@@ -27,8 +27,8 @@ def remove_cycles(route):
     route_edges = list(zip(route, route[1:]))
     route_graph = nx.DiGraph(route_edges)
     cycles = list(nx.simple_cycles(route_graph))
-    if cycles:
-        print(f'Cycles = {cycles}')
+    # if cycles:
+    #     print(f'Cycles = {cycles}')
     for cycle in cycles:
         start, end = 0, len(cycle)
         while end < len(route):
