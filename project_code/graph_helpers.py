@@ -35,4 +35,4 @@ def build_graph():
 
     graph.add_weighted_edges_from(weight_values, weight=weight_col)
 
-    return graph
+    return graph, df_geodata
