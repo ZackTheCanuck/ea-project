@@ -19,3 +19,15 @@ def get_inverse_traffic_flow_probabilities(individual, all_routes):
     inverse_flows = [1-pf if pf > 0 else 0 for pf in percentage_flows]
     percentage_inverse_flows = [invf/sum(inverse_flows) for invf in inverse_flows]
     return percentage_inverse_flows
+
+def remove_cycles(route):
+    # NOT TESTED
+    seen_nodes = {}
+    new_route = []
+    for i, node in enumerate(route):
+        new_route.append(node)
+        if seen_nodes[node]:                            # if node was already in route
+            new_route = new_route[:seen_nodes[node]+1]  # truncate route to first occurrence of node
+        seen_nodes[node] = i                            # add corresponding index to map
+    return new_route
+
