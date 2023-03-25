@@ -26,7 +26,7 @@ def new_route(individual, all_routes, graph, start, end):
 def random_p(individual, all_unique_routes, graph, start_node, end_node):
 
     # Choose a random subset of routes proportional to their inverse traffic flow
-    probabilities = ea_helpers.get_inverse_traffic_flow_probabilities(individual, all_unique_routes)
+    probabilities = get_inverse_traffic_flow_probabilities(individual, all_unique_routes)
     # Select a random subset of route indices from all_unique_routes based on probabilities
     selected_routes_indices = np.random.choice(len(all_unique_routes), size=len(individual.routes) // 2, replace=False, p=probabilities)
     # Get the routes corresponding to the selected indices
@@ -43,7 +43,7 @@ def random_p(individual, all_unique_routes, graph, start_node, end_node):
         # Replace subsegment with a new random route
         new_subroute = shortest_path_algorithms.dijkstra(graph, route[start_index], route[end_index])
         new_route = route[:start_index] + new_subroute[:-1] + route[end_index:]
-        new_route = ea_helpers.remove_cycles(new_route)
+        new_route = remove_cycles(new_route)
         individual.routes[individual.routes.index(route)] = new_route
 
     # Update all_unique_routes with new routes
@@ -57,7 +57,7 @@ def random_p(individual, all_unique_routes, graph, start_node, end_node):
 # except the one we are currently using, and choose proportional to the fastest (lowest fitness) node
 def link_wp(individual, all_unique_routes, graph, start, end):
     # Choose a random subset of routes proportional to their inverse traffic flow
-    probabilities = ea_helpers.get_inverse_traffic_flow_probabilities(individual, all_unique_routes)
+    probabilities = get_inverse_traffic_flow_probabilities(individual, all_unique_routes)
     # Select a random subset of route indices from all_unique_routes based on probabilities
     selected_routes_indices = np.random.choice(len(all_unique_routes), size=len(individual.routes) // 2, replace=False, p=probabilities)
     # Get the routes corresponding to the selected indices
@@ -84,7 +84,7 @@ def link_wp(individual, all_unique_routes, graph, start, end):
         # Replace subsegment with a new random route
         new_subroute = shortest_path_algorithms.dijkstra(graph, route[start_index], route[end_index])
         new_route    = route[:start_index] + new_subroute[:-1] + route[end_index:]
-        new_route    = ea_helpers.remove_cycles(new_route)
+        new_route    = remove_cycles(new_route)
         individual.routes[individual.routes.index(route)] = new_route
 
     # Update all_unique_routes with new routes
