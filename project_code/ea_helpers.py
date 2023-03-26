@@ -6,7 +6,7 @@ def calculate_traffic_flow(individual, all_routes):
     traffic_flow = []
     for unique_route in all_routes:
         flow_count = 0
-        for route in individual.routes:
+        for route in individual.get_routes():
             if route == unique_route:
                 flow_count += 1
         traffic_flow.append(flow_count)

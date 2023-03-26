@@ -11,7 +11,7 @@ def initialize_populations(graph, start_node, end_node, popsize, num_populations
         for j in range(popsize):
             ind = individual(graph, start_node, end_node)
             population.append(ind)
-            for route in ind.routes:
+            for route in ind.get_routes():
                 if route not in all_unique_routes:
                     all_unique_routes.append(route)
         populations.append(population)

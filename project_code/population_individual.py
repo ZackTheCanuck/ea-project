@@ -19,7 +19,7 @@ class individual():
         route_edges = zip(route, route[1:])
         edge_weights = []
         for node_1, node_2 in route_edges:
-            edge_weights.append(round(self.graph[node_1][node_2][0]['mean_travel_time'], 2))
+            edge_weights.append(round(self.get_edge_travel_time(node_1, node_2), 2))
         return edge_weights
 
     # def get_route_fitnesses(self, route):
@@ -29,9 +29,27 @@ class individual():
         all_route_edges    = [zip(route, route[1:]) for route in self.routes]
         all_edges_combined = list(chain.from_iterable(all_route_edges))
         edge_flows         = Counter(all_edges_combined)
-        edge_travel_times  = [self.graph[edge[0]][edge[1]][0]['mean_travel_time'] * edge_flows[edge] for edge in all_edges_combined]
+        edge_travel_times  = [self.get_edge_travel_time(edge[0], edge[1]) * edge_flows[edge] for edge in all_edges_combined]
         overall_fitness    = sum(edge_travel_times)
         return round(overall_fitness, 2)
+    
+    def get_edge_travel_time(self, from_node, to_node):
+        return self.graph[from_node][to_node][0]['mean_travel_time']
+    
+    def get_route_index(self, route):
+        return self.routes.index(route)
+    
+    def get_routes(self):
+        return self.routes
+    
+    def get_route(self, index):
+        return self.routes[index]
+    
+    def get_num_routes(self):
+        return len(self.routes)
+    
+    def update_route_at_index(self, index, new_route):
+        self.routes[index] = new_route
     
     def display(self, geodata):
         ax = geodata['geometry'].plot(color='#5a7d4d')
@@ -48,7 +66,3 @@ class individual():
     
     def __str__(self):
         return f"Individual object with routes: {self.routes}"
-
-    
-    def get_routes(self):
-        return self.routes[:]

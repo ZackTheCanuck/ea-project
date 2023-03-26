@@ -14,9 +14,9 @@ def new_route(individual, all_routes, graph, start, end):
     probabilities    = get_inverse_traffic_flow_probabilities(individual, all_routes)
     all_routes_index = np.random.choice(range(len(all_routes)), p=probabilities)
     route_to_replace = all_routes[all_routes_index]
-    route_index = individual.routes.index(route_to_replace)
-    new_route = shortest_path_algorithms.dijkstra(graph, start, end)
-    individual.routes[route_index] = new_route
+    route_index      = individual.get_route_index(route_to_replace)
+    new_route        = shortest_path_algorithms.dijkstra(graph, start, end)
+    individual.update_route_at_index(index=route_index, new_route=new_route)
     if new_route not in all_routes:
         all_routes.append(new_route)
     
@@ -28,7 +28,7 @@ def random_p(individual, all_unique_routes, graph, start_node, end_node):
     # Choose a random subset of routes proportional to their inverse traffic flow
     probabilities = get_inverse_traffic_flow_probabilities(individual, all_unique_routes)
     # Select a random subset of route indices from all_unique_routes based on probabilities
-    selected_routes_indices = np.random.choice(len(all_unique_routes), size=len(individual.routes) // 2, replace=False, p=probabilities)
+    selected_routes_indices = np.random.choice(len(all_unique_routes), size=individual.get_num_routes() // 2, replace=False, p=probabilities)
     # Get the routes corresponding to the selected indices
     selected_routes = []
     for i in selected_routes_indices:
@@ -42,12 +42,13 @@ def random_p(individual, all_unique_routes, graph, start_node, end_node):
         end_index = start_index + subroute_length - 1
         # Replace subsegment with a new random route
         new_subroute = shortest_path_algorithms.dijkstra(graph, route[start_index], route[end_index])
-        new_route = route[:start_index] + new_subroute[:-1] + route[end_index:]
-        new_route = remove_cycles(new_route)
-        individual.routes[individual.routes.index(route)] = new_route
+        new_route    = route[:start_index] + new_subroute[:-1] + route[end_index:]
+        new_route    = remove_cycles(new_route)
+        index        = individual.get_route_index(route)
+        individual.update_route_at_index(index, new_route)
 
     # Update all_unique_routes with new routes
-    for route in individual.routes:
+    for route in individual.get_routes():
         if route not in all_unique_routes:
             all_unique_routes.append(route)
 
@@ -59,7 +60,7 @@ def link_wp(individual, all_unique_routes, graph, start, end):
     # Choose a random subset of routes proportional to their inverse traffic flow
     probabilities = get_inverse_traffic_flow_probabilities(individual, all_unique_routes)
     # Select a random subset of route indices from all_unique_routes based on probabilities
-    selected_routes_indices = np.random.choice(len(all_unique_routes), size=len(individual.routes) // 2, replace=False, p=probabilities)
+    selected_routes_indices = np.random.choice(len(all_unique_routes), size=individual.get_num_routes() // 2, replace=False, p=probabilities)
     # Get the routes corresponding to the selected indices
     selected_routes = []
     for i in selected_routes_indices:
@@ -69,7 +70,7 @@ def link_wp(individual, all_unique_routes, graph, start, end):
         start_node_probs = []
         for i in range(len(route_edges)):
             node_out_edges = individual.graph.out_edges(route[i])
-            outbound_travel_times = [individual.graph[edge[0]][edge[1]][0]['mean_travel_time'] for edge in node_out_edges if edge not in route_edges]
+            outbound_travel_times = [individual.get_edge_travel_time(edge[0], edge[1]) for edge in node_out_edges if edge not in route_edges]
             start_node_probs.append(sum(outbound_travel_times))
         start_node_probs.append(0) # no point in starting at our goal node, so set the probability to 0
         percentages = [prob/sum(start_node_probs) for prob in start_node_probs]
@@ -85,10 +86,11 @@ def link_wp(individual, all_unique_routes, graph, start, end):
         new_subroute = shortest_path_algorithms.dijkstra(graph, route[start_index], route[end_index])
         new_route    = route[:start_index] + new_subroute[:-1] + route[end_index:]
         new_route    = remove_cycles(new_route)
-        individual.routes[individual.routes.index(route)] = new_route
+        index        = individual.get_route_index(route)
+        individual.update_route_at_index(index, new_route)
 
     # Update all_unique_routes with new routes
-    for route in individual.routes:
+    for route in individual.get_routes():
         if route not in all_unique_routes:
             all_unique_routes.append(route)
 
@@ -126,7 +128,7 @@ def ex_segment(individual):
     sub_rs2 = np.split(route2, [dp_idx2, gt_idx2])                  # split route2 into 3 subarrays
     route1 = np.concatenate(sub_rs1[0], sub_rs2[1], sub_rs1[2])     # swap subroutes between selected diverge_p & goto_p
     route2 = np.concatenate(sub_rs2[0], sub_rs1[1], sub_rs2[2])
-    individual.routes[rte_idx1] = route1                            # replace routes in individual
-    individual.routes[rte_idx2] = route2
+    individual.update_route_at_index(rte_idx1, route1)                          # replace routes in individual
+    individual.update_route_at_index(rte_idx2, route2)
 
     return individual

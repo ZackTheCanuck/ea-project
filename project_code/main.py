@@ -67,7 +67,7 @@ def main():
                     individual = mutation_operator(individual, all_unique_routes, toronto_graph, start_node, end_node)
                 
                 # update all_unique_routes in the mutation process
-                for route in individual.routes:
+                for route in individual.get_routes():
                     if route not in all_unique_routes:
                         all_unique_routes.append(route)
                     
