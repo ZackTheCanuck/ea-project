@@ -29,10 +29,11 @@ def main():
     xover_strategy       = recombination.exhaustive_crossover
     mut_ops              = (mutation.new_route, mutation.random_p, mutation.link_wp, mutation.ex_segment)
     mut_ops_weights      = [30, 60, 30, 15]
-    gen_limit            = 1
+    gen_limit            = 200
     num_populations      = 3  # Add the number of populations you want to create here
     migration_interval   = 10
     num_migrants         = 1
+    ex_segment_counter   = 6  # count how many generations since last using ex_segment - starting this at 6 lets us increase its weight in the first 6 generations properly
 
     # initialize multiple populations
     populations, all_unique_routes = initialize_populations(toronto_graph, start_node, end_node, popsize, num_populations)
@@ -53,13 +54,14 @@ def main():
             # print(f'{crossover_offspring}, num pairs = {len(crossover_offspring)}')
         
             mutated_population = copy.deepcopy(population)
+            ex_segment_used = False
 
             for individual in mutated_population:
                 num_mutations = max(1, numpy.random.poisson(1.5))
                 mutations_to_perform = random.choices(mut_ops, weights=mut_ops_weights, k=num_mutations)
-                # TODO: update mut_ops_weights over generations according to the paper
                 if mutation.ex_segment in mutations_to_perform:
                     mutations_to_perform = [mutation.ex_segment]
+                    ex_segment_used = True
                 # apply mutations
                 for mutation_operator in mutations_to_perform:
                     individual = mutation_operator(individual, all_unique_routes, toronto_graph, start_node, end_node)
@@ -89,7 +91,21 @@ def main():
             new_populations = migrate(new_populations, num_migrants)
         
         populations = new_populations
-            
+
+        # update mutation operators frequency
+        # new_route updated so that  it is 30 for the first 10 iterations, and then lowered linearly such that it reaches 1 at iteration 200
+        if gen >= 10:
+            current_new_route_weight = mut_ops_weights[0]
+            mut_ops_weights[0] = max(current_new_route_weight - 29/190, 1)
+        # ex_segment updated so that if it was used within the last 6 iterations its weight is 0
+        # otherwise, it starts at 15 and is increased linearly to 30, depending on the iterations without improvement
+        if ex_segment_used:
+            mut_ops_weights[3] = 0
+            ex_segment_counter = 0
+        else:
+            ex_segment_counter += 1
+            if ex_segment_counter > 6:
+                mut_ops_weights[3] = min(15 + (0.5 * (ex_segment_counter - 6)), 30)
         
     # evolution ends
     
