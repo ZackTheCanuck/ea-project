@@ -50,7 +50,7 @@ def main():
                 selected_parents = copy.deepcopy(random.sample(population, 2))
                 # once we code xovers this should work
                 single_crossover_offspring = xover_strategy(selected_parents)
-                crossover_offspring.extend(single_crossover_offspring)
+                crossover_offspring.append(single_crossover_offspring)
             # print(f'{crossover_offspring}, num pairs = {len(crossover_offspring)}')
         
             mutated_population = copy.deepcopy(population)

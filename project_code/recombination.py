@@ -3,9 +3,11 @@ import itertools
 import diversity
 
 def exhaustive_crossover(parents):
-    parent1_routes = parents[0].routes
-    parent2_routes = parents[1].routes
-    n = len(parent1_routes)
+    parent1 = parents[0]
+    parent2 = parents[1]
+    parent1_routes = parent1.get_routes()
+    parent2_routes = parent2.get_routes()
+    n = parent1.get_num_routes()
 
     combined_routes = parent1_routes + parent2_routes
     all_combinations = list(itertools.combinations(combined_routes, n))
@@ -23,7 +25,10 @@ def exhaustive_crossover(parents):
             max_diversity = diversity_score
             best_combination = combination
 
-    return list(best_combination)
+    for index, route in enumerate(best_combination):
+        parent1.update_route_at_index(index, route)
+
+    return parent1
 
 
 def greedy_crossover(parents, diversity_func):                                  # diversity_func is placeholder to be implemented and imported
