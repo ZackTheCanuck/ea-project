@@ -44,6 +44,7 @@ def random_p(individual, all_unique_routes, graph, start_node, end_node):
         new_subroute = shortest_path_algorithms.dijkstra(graph, route[start_index], route[end_index])
         new_route    = route[:start_index] + new_subroute[:-1] + route[end_index:]
         new_route    = remove_cycles(new_route)
+        #print(route, new_subroute, new_route)
         index        = individual.get_route_index(route)
         individual.update_route_at_index(index, new_route)
 
@@ -67,19 +68,18 @@ def link_wp(individual, all_unique_routes, graph, start, end):
         selected_routes.append(all_unique_routes[i])
     for route in selected_routes:
         route_edges = list(zip(route, route[1:]))
-        start_node_probs = []
+        node_probs = []
         for i in range(len(route_edges)):
             node_out_edges = individual.graph.out_edges(route[i])
             outbound_travel_times = [individual.get_edge_travel_time(edge[0], edge[1]) for edge in node_out_edges if edge not in route_edges]
-            start_node_probs.append(sum(outbound_travel_times))
-        start_node_probs.append(0) # no point in starting at our goal node, so set the probability to 0
-        percentages = [prob/sum(start_node_probs) for prob in start_node_probs]
+            node_probs.append(sum(outbound_travel_times))
+        percentages = [prob/sum(node_probs) for prob in node_probs]
 
         # Choose a start node and destination node
-        route_length = len(route)
+        num_nodes = len(node_probs)
         # this hack lets us take the 2 indexes with the lowest outbound travel times
-        non_selected_indexes = np.random.choice(route_length, route_length - 2, replace=False, p=percentages)
-        selected_indexes = [i for i in range(route_length) if i not in non_selected_indexes]
+        non_selected_indexes = np.random.choice(num_nodes, num_nodes - 2, replace=False, p=percentages)
+        selected_indexes = [i for i in range(num_nodes) if i not in non_selected_indexes]
         start_index  = min(selected_indexes)
         end_index    = max(selected_indexes)
         # Replace subsegment with a new random route

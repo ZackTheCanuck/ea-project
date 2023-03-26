@@ -24,17 +24,23 @@ def get_inverse_traffic_flow_probabilities(individual, all_routes):
 
 # find and remove cycles from a route
 def remove_cycles(route):
-    route_edges = list(zip(route, route[1:]))
-    route_graph = nx.DiGraph(route_edges)
-    cycles = list(nx.simple_cycles(route_graph))
-    # if cycles:
-    #     print(f'Cycles = {cycles}')
-    for cycle in cycles:
-        start, end = 0, len(cycle)
+    # no cycles
+    if len(route) == len(set(route)):
+        return route
+    
+    # cycles
+    #print(f'Route {route} has cycles, removing...')
+    start = 0
+    while start < len(route) - 1:
+        end = start + 1
         while end < len(route):
-            if route[start:end] == cycle:
+            if route[start] == route[end]:
                 del route[start:end]
+                end = start + 1
             else:
-                start += 1
                 end += 1
+        start += 1
+        
+    #print(f'Cycles removed, route is now {route}')
+
     return route
