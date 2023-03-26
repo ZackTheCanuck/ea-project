@@ -1,7 +1,30 @@
 import numpy as np
+import itertools
+import diversity
 
 def exhaustive_crossover(parents):
-    return parents
+    parent1_routes = parents[0].routes
+    parent2_routes = parents[1].routes
+    n = len(parent1_routes)
+
+    combined_routes = parent1_routes + parent2_routes
+    all_combinations = list(itertools.combinations(combined_routes, n))
+
+    max_diversity = -1
+    best_combination = None
+
+    for combination in all_combinations:
+        # Calculate diversity score for this combination
+        diversity_score = diversity.diversity_func(combination)
+        
+        # If the current combination has a higher diversity score than the previous maximum,
+        # update the maximum diversity score and store the current combination.
+        if diversity_score > max_diversity:
+            max_diversity = diversity_score
+            best_combination = combination
+
+    return list(best_combination)
+
 
 def greedy_crossover(parents, diversity_func):                                  # diversity_func is placeholder to be implemented and imported
     """Constructs one new route set following the specified greedy crossover algo"""
