@@ -1,7 +1,4 @@
-import networkx as nx
-
 # functions needed by multiple files
-
 def calculate_traffic_flow(individual, all_routes):
     traffic_flow = []
     for unique_route in all_routes:

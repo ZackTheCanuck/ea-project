@@ -1,18 +1,18 @@
 from collections import Counter
 from itertools import chain
 
+import hyperparameters
 import matplotlib.pyplot as plt
 import networkx as nx
-import shortest_path_algorithms
 from matplotlib import colors as mcolors
 
-routes_per_individual = 3
-shortest_path_algo = shortest_path_algorithms.dijkstra
+ROUTES_PER_INDIVIDUAL   = hyperparameters.routes_per_individual
+SHORTEST_PATH_ALGORITHM = hyperparameters.shortest_path_algo
 
 class individual():
     def __init__(self, graph, start, end) -> None:
         self.graph        = graph
-        self.routes       = [shortest_path_algo(graph, start, end) for _ in range(routes_per_individual)]
+        self.routes       = [SHORTEST_PATH_ALGORITHM(graph, start, end) for _ in range(ROUTES_PER_INDIVIDUAL)]
         self.edge_weights = [self.get_edge_weights(route) for route in self.routes]
         
     def get_edge_weights(self, route):
