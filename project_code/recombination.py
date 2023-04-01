@@ -50,17 +50,17 @@ def greedy_crossover(parents, diversity_func):                                  
 def randomized_greedy_crossover(parents, diversity_func):
     """Constructs one new route set following the specified randomized greedy crossover algo"""
     # Randomly select one route
-    comb_chroms = np.concatenate((parents[0], parents[1]))  # combine chromosomes into one array
+    comb_chroms = np.concatenate((parents[0], parents[1]))                  # combine chromosomes into one array
     random_index = np.random.randint(0, len(comb_chroms))
-    r = comb_chroms[random_index]  # simplest init is to fill arr with the random val
-    np.delete(comb_chroms, random_index)  # delete that val from the vals to be selected
+    r = comb_chroms[random_index]                                           # simplest init is to fill arr with the random val
+    np.delete(comb_chroms, random_index)                                    # delete that val from the vals to be selected
 
     # Select n-1 routes greedily
     n = len(parents[0])
-    diversities = [diversity_func(allele) for allele in comb_chroms]  # Get diversities
+    diversities = [diversity_func(allele) for allele in comb_chroms]        # Get diversities
     child = []
     for i in range(n-1):
-        child.append(np.random.choice(comb_chroms, p=diversities))  # Sample from routes using the diversity as the probability
-    child.insert(r, 0)  # insert random route into position 0 (optional?)
+        child.append(np.random.choice(comb_chroms, p=diversities))          # Sample from routes using the diversity as the probability
+    child.insert(r, 0)                                                      # insert random route into position 0 (optional?)
 
     return child

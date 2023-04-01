@@ -1,6 +1,7 @@
 from collections import Counter
 from itertools import chain
 
+import numpy as np
 import hyperparameters
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -12,7 +13,7 @@ SHORTEST_PATH_ALGORITHM = hyperparameters.shortest_path_algo
 class individual():
     def __init__(self, graph, start, end) -> None:
         self.graph        = graph
-        self.routes       = [SHORTEST_PATH_ALGORITHM(graph, start, end) for _ in range(ROUTES_PER_INDIVIDUAL)]
+        self.routes       = np.array([SHORTEST_PATH_ALGORITHM(graph, start, end) for _ in range(ROUTES_PER_INDIVIDUAL)], dtype=object)
         self.edge_weights = [self.get_edge_weights(route) for route in self.routes]
         
     def get_edge_weights(self, route):
@@ -40,7 +41,7 @@ class individual():
         return self.routes.index(route)
     
     def get_routes(self):
-        return self.routes
+        return self.routes[:]
     
     def get_route(self, index):
         return self.routes[index]
