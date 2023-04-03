@@ -12,7 +12,7 @@ SHORTEST_PATH_ALGORITHM = hyperparameters.shortest_path_algo
 
 class individual():
     def __init__(self, graph, start, end) -> None:
-        self.graph        = graph
+        self.graph        = graph   
         self.routes       = np.array([SHORTEST_PATH_ALGORITHM(graph, start, end) for _ in range(ROUTES_PER_INDIVIDUAL)], dtype=object)
         self.edge_weights = [self.get_edge_weights(route) for route in self.routes]
         
@@ -48,6 +48,9 @@ class individual():
     
     def get_num_routes(self):
         return len(self.routes)
+
+    def get_length_max_route(self):
+        return np.max([len(route) for route in self.routes])
     
     def update_route_at_index(self, index, new_route):
         self.routes[index] = new_route

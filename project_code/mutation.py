@@ -100,10 +100,8 @@ def ex_segment(individual, all_unique_routes, graph, start, end):
     # routes = individual.get_routes()      
     # r1, r2 = np.random.choice(len(routes), 2, replace=False)        # select two copied routes uniformly at random
     # route1 = routes[r1]; route2 = routes[r2]
-    
     # route1 = remove_cycles(route1); route2 = remove_cycles(route2)
     # shared_p = np.array(list(set(route1) & set(route2)))            # find nodes occurring in both routes
-    # print(shared_p)
     # diverge_p = np.full(shared_p.shape, -1, dtype=int)              # divergence p are shared p w diff successor                        
     # goto_p = np.full(shared_p.shape, -1, dtype=int)                 # goto p are shared p w diff predecessor after diverge_p
     # for idx, p in enumerate(shared_p):
@@ -127,13 +125,13 @@ def ex_segment(individual, all_unique_routes, graph, start, end):
     # delete_i = np.where(goto_p == -1)[0]
     # goto_p = np.delete(goto_p, delete_i)
     # v_t = np.random.choice(goto_p)                                  # choose a goto point occurring after v_s at random
-    # gt1 = np.where(route1 == v_t)                                   # find index of divergence point in route1
-    # gt2 = np.where(route2 == v_t)                                   # find index of divergence point in route2
+    # gt1 = np.where(route1 == v_t)[0][0]                             # find index of divergence point in route1
+    # gt2 = np.where(route2 == v_t)[0][0]                             # find index of divergence point in route2
     # sub_rs1 = np.split(route1, [dp1, gt1])                          # split route1 into 3 subarrays 
     # sub_rs2 = np.split(route2, [dp2, gt2])                          # split route2 into 3 subarrays
     # route1 = np.concatenate(sub_rs1[0], sub_rs2[1], sub_rs1[2])     # swap subroutes between selected diverge_p & goto_p
     # route2 = np.concatenate(sub_rs2[0], sub_rs1[1], sub_rs2[2])
     # individual.update_route_at_index(r1, route1)                    # replace routes in individual
-    # individual.update_route_at_index(r2, route2)
+    # individual.update_route_at_index(r2, route2) 
 
     return individual
