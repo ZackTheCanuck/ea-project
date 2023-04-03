@@ -1,6 +1,7 @@
 import numpy as np
 import itertools
-import diversity
+import population_individual
+from diversity import *
 
 def exhaustive_crossover(parents):
     parent1 = parents[0]
@@ -17,7 +18,7 @@ def exhaustive_crossover(parents):
 
     for combination in all_combinations:
         # Calculate diversity score for this combination
-        diversity_score = diversity.diversity_func(combination)
+        diversity_score = diversity_func(combination)
         
         # If the current combination has a higher diversity score than the previous maximum,
         # update the maximum diversity score and store the current combination.
@@ -31,36 +32,37 @@ def exhaustive_crossover(parents):
     return parent1
 
 
-def greedy_crossover(parents, diversity_func):                                  # diversity_func is placeholder to be implemented and imported
+def greedy_crossover(parents):                                          
     """Constructs one new route set following the specified greedy crossover algo"""
     # Randomly select one route
-    comb_chroms = np.concatenate((parents[0], parents[1]))                      # combine chromosomes into one array
-    random_index = np.random.randint(0, len(comb_chroms))       
-    r = comb_chroms[random_index]                                               # simplest init is to fill arr with the random val
-    np.delete(comb_chroms, random_index)                                        # delete that val from the vals to be selected
+    comb_routes = parents[0].get_routes() + parents[1].get_routes()
+    rand_idx = np.random.randint(0, len(comb_routes))                                   # combine routes into one array
+    r = comb_routes[rand_idx]                                                           # simplest init is to fill arr with the random val
+    comb_routes.pop(rand_idx)                                                           # delete that val from the vals to be selected
     
-    # Select n-1 routes greedily
-    n = len(parents[0])
-    sorted_genes = np.sort([diversity_func(allele) for allele in comb_chroms])  # sort the genes according to diversity function    
-    child = sorted_genes[:n-1]                                                  # greedily select the n-1 most diverse routes
-    child.insert(r,0)                                                           # insert random route into position 0 (optional?)
+    # Choose subset of n-1 routes which maximizes diversity_func()
+    n = parents[0].get_num_routes()
+    subsets = [route_set for route_set in itertools.combinations_with_replacement(comb_routes, n-1)]    
 
+    ordered_idx = np.argsort([diversity_func(route_set) for route_set in subsets])      # sort the genes according to diversity function   
+    new_routes = list(subsets[ordered_idx[0]])                                          # get routes which max diversity
+    new_routes = [r] + new_routes                                                       # insert random route into position 0
+
+    child = population_individual.individual(parents[0].get_graph(), routes=new_routes) # initialize child
     return child
-
-def randomized_greedy_crossover(parents, diversity_func):
+                                                                                    
+    
+def randomized_greedy_crossover(parents):
     """Constructs one new route set following the specified randomized greedy crossover algo"""
     # Randomly select one route
-    comb_chroms = np.concatenate((parents[0], parents[1]))                  # combine chromosomes into one array
-    random_index = np.random.randint(0, len(comb_chroms))
-    r = comb_chroms[random_index]                                           # simplest init is to fill arr with the random val
-    np.delete(comb_chroms, random_index)                                    # delete that val from the vals to be selected
-
-    # Select n-1 routes greedily
-    n = len(parents[0])
-    diversities = [diversity_func(allele) for allele in comb_chroms]        # Get diversities
-    child = []
-    for i in range(n-1):
-        child.append(np.random.choice(comb_chroms, p=diversities))          # Sample from routes using the diversity as the probability
-    child.insert(r, 0)                                                      # insert random route into position 0 (optional?)
-
+    comb_routes = parents[0].get_routes() + parents[1].get_routes()
+    rand_idx = np.random.randint(0, len(comb_routes))                                   # combine routes into one array
+    r = comb_routes[rand_idx]                                                           # simplest init is to fill arr with the random val
+    comb_routes.pop(rand_idx)                                                           # delete that val from the vals to be selected
+    n = parents[0].get_num_routes()
+    divs = np.array([diversity_func(route) for route in comb_routes])                   # get diversities
+    rte_idx = np.random.choice(2*n-1, n-1, p=divs/np.sum(divs))                         # randomly sample route indices using diversity as prob
+    new_routes = [comb_routes[i] for i in rte_idx]                                      # get corresponding routes
+    new_routes = [r] + new_routes                                                       # insert random route into position 0
+    child = population_individual.individual(parents[0].get_graph(), routes=new_routes) # initialize child
     return child

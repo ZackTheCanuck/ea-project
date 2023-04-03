@@ -11,9 +11,12 @@ ROUTES_PER_INDIVIDUAL   = hyperparameters.routes_per_individual
 SHORTEST_PATH_ALGORITHM = hyperparameters.shortest_path_algo
 
 class individual():
-    def __init__(self, graph, start, end) -> None:
+    def __init__(self, graph=None, start=None, end=None, routes=[]) -> None:
         self.graph        = graph   
-        self.routes       = np.array([SHORTEST_PATH_ALGORITHM(graph, start, end) for _ in range(ROUTES_PER_INDIVIDUAL)], dtype=object)
+        if list(routes):
+            self.routes = routes
+        else:
+            self.routes       = [SHORTEST_PATH_ALGORITHM(graph, start, end) for _ in range(ROUTES_PER_INDIVIDUAL)]
         self.edge_weights = [self.get_edge_weights(route) for route in self.routes]
         
     def get_edge_weights(self, route):
@@ -54,6 +57,9 @@ class individual():
     
     def update_route_at_index(self, index, new_route):
         self.routes[index] = new_route
+    
+    def get_graph(self):
+        return self.graph
     
     def display(self, geodata):
         ax = geodata['geometry'].plot(color='#5a7d4d')

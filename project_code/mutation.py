@@ -96,7 +96,8 @@ def link_wp(individual, all_unique_routes, graph, start, end):
 
     return individual
 
-def ex_segment(individual, all_unique_routes, graph, start, end):           
+def ex_segment(individual, all_unique_routes, graph, start, end):         
+    """Outdated, works when get_routes() returns ndarray"""  
     # routes = individual.get_routes()      
     # r1, r2 = np.random.choice(len(routes), 2, replace=False)        # select two copied routes uniformly at random
     # route1 = routes[r1]; route2 = routes[r2]
