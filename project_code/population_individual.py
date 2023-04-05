@@ -1,14 +1,14 @@
 from collections import Counter
 from itertools import chain
 
-import numpy as np
 import hyperparameters
 import matplotlib.pyplot as plt
 import networkx as nx
+import numpy as np
 from matplotlib import colors as mcolors
 
 ROUTES_PER_INDIVIDUAL   = hyperparameters.routes_per_individual
-SHORTEST_PATH_ALGORITHM = hyperparameters.shortest_path_algo
+SHORTEST_PATH_ALGORITHM = hyperparameters.shortest_path_algo[1]
 
 class individual():
     def __init__(self, graph=None, start=None, end=None, routes=[]) -> None:

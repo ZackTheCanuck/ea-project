@@ -11,12 +11,12 @@ import mutation
 import numpy
 import population_individual
 import recombination
+import shortest_path_algorithms
 import survivor_selection
 from initialization import initialize_populations, migrate
 
 
-def main():
-
+def run_ea_algorithm(start, end, xover):
     # building our graph
     toronto_graph, geodata = graph_helpers.build_graph()
     
@@ -30,20 +30,27 @@ def main():
 
     # mutation parameters
     mut_ops             = (mutation.new_route, mutation.random_p, mutation.link_wp, mutation.ex_segment)
-    mut_ops_weights     = [30, 60, 30, 15]
-    ex_segment_counter  = 6  # count how many generations since last using ex_segment - starting this at 6 lets us increase its weight in the first 6 generations properly
+    mut_ops_weights     = [30, 60, 30, 0]
+    # ex_segment_counter  = 6  # count how many generations since last using ex_segment - starting this at 6 lets us increase its weight in the first 6 generations properly
 
     # hyperparameters
-    START_NODE, END_NODE = random.sample(list(toronto_graph.nodes), 2)
+    START_NODE, END_NODE = start, end
     RUNS_PER_ROUTE       = hyperparameters.num_runs
     POPSIZE              = hyperparameters.population_size
-    XOVER                = hyperparameters.crossover_strategy
+    XOVER                = xover
     GEN_LIMIT            = hyperparameters.max_generations
     NUM_ISLANDS          = hyperparameters.num_islands
     MIGRATION_INTERVAL   = hyperparameters.migration_interval
     NUM_MIGRANTS         = hyperparameters.num_migrants
+    SPA, SPA_VAR         = hyperparameters.shortest_path_algo[0], hyperparameters.shortest_path_algo[1]
 
-    run_metrics = metrics.run_metrics(START_NODE, END_NODE)
+    # use this individual to compare our best results to just having all cars take the fastest route
+    ROUTES_PER_IND       = hyperparameters.routes_per_individual
+    best_route           = [SPA(toronto_graph, START_NODE, END_NODE)] * ROUTES_PER_IND
+    baseline_fitness_ind = population_individual.individual(toronto_graph, START_NODE, END_NODE, best_route)
+    baseline_fitness     = baseline_fitness_ind.get_overall_fitness()
+
+    run_metrics = metrics.run_metrics(START_NODE, END_NODE, XOVER, baseline_fitness)
     run_metrics.save_hyperparameters()
     
     for run in range(RUNS_PER_ROUTE):
@@ -85,7 +92,7 @@ def main():
                         ex_segment_used = True
                     # apply mutations
                     for mutation_operator in mutations_to_perform:
-                        individual = mutation_operator(individual, all_unique_routes, toronto_graph, START_NODE, END_NODE)
+                        individual = mutation_operator(individual, all_unique_routes, toronto_graph, SPA_VAR, START_NODE, END_NODE)
                     
                     # update all_unique_routes in the mutation process
                     for route in individual.get_routes():
@@ -108,13 +115,13 @@ def main():
                 mut_ops_weights[0] = max(current_new_route_weight - 29/190, 1)
             # ex_segment updated so that if it was used within the last 6 iterations its weight is 0
             # otherwise, it starts at 15 and is increased linearly to 30, depending on the iterations without improvement
-            if ex_segment_used:
-                mut_ops_weights[3] = 0
-                ex_segment_counter = 0
-            else:
-                ex_segment_counter += 1
-                if ex_segment_counter > 6:
-                    mut_ops_weights[3] = min(15 + (0.5 * (ex_segment_counter - 6)), 30)
+            # if ex_segment_used:
+            #     mut_ops_weights[3] = 0
+            #     ex_segment_counter = 0
+            # else:
+            #     ex_segment_counter += 1
+            #     if ex_segment_counter > 6:
+            #         mut_ops_weights[3] = min(15 + (0.5 * (ex_segment_counter - 6)), 30)
 
             # get info from the populations for metrics
             total_fitness = 0
@@ -151,7 +158,18 @@ def main():
     run_metrics.create_execution_times_plot(execution_times, average_execution_time)
     run_metrics.create_results_plot(runs_best_result, runs_average_result)
 
-# end of main
+
+def main():
+    # long route through downtown, long route along outskirts, mid length route across downtown, short route across downtown,
+    # mid length route from suburb to downtown, short route along outskirts
+    TEST_ROUTES = [(13, 6), (116, 117), (85,15), (5, 139), (34, 21), (1, 11)]
+    print(f'TEST_ROUTES = {TEST_ROUTES}\nSPA = {hyperparameters.shortest_path_algo}')
+    XOVER = [recombination.exhaustive_crossover, recombination.greedy_crossover, recombination.randomized_greedy_crossover]
+
+    for start, end in TEST_ROUTES:
+        for xover in XOVER:
+            run_ea_algorithm(start, end, xover)
+
 
 if __name__ == "__main__":
     main()

@@ -5,13 +5,15 @@ import matplotlib.pyplot as plt
 
 class run_metrics():
 
-    def __init__(self, start, end) -> None:
+    def __init__(self, start, end, xover, baseline_fitness) -> None:
         self.START_NODE         = start
         self.END_NODE           = end
+        self.BASELINE_FITNESS   = baseline_fitness
         self.PROJECT_ROOT_DIR   = hyperparameters.proj_root
         self.RUNS_PER_ROUTE     = hyperparameters.num_runs
         self.POPSIZE            = hyperparameters.population_size
-        self.XOVER              = hyperparameters.crossover_strategy
+        self.XOVER              = xover
+        self.SPA                = hyperparameters.shortest_path_algo
         self.GEN_LIMIT          = hyperparameters.max_generations
         self.NUM_ISLANDS        = hyperparameters.num_islands
         self.MIGRATION_INTERVAL = hyperparameters.migration_interval
@@ -29,6 +31,7 @@ class run_metrics():
             f.write(f'Number of runs          = {self.RUNS_PER_ROUTE}\n')
             f.write(f'Population size         = {self.POPSIZE}\n')
             f.write(f'Crossover strategy      = {self.XOVER}\n')
+            f.write(f'Shortest path algorithm = {self.SPA}\n')
             f.write(f'Max generations per run = {self.GEN_LIMIT}\n')
             f.write(f'Number of islands       = {self.NUM_ISLANDS}\n')
             f.write(f'Migration interval      = {self.MIGRATION_INTERVAL}\n')
@@ -51,6 +54,8 @@ class run_metrics():
     
     def create_fitness_plot(self, runs_generational_average_fitness):
         plt.figure()
+        plt.plot(range(self.GEN_LIMIT), [self.BASELINE_FITNESS] * self.GEN_LIMIT, label='Baseline Fitness')
         for generational_average_fitness in runs_generational_average_fitness:
             plt.plot(range(len(generational_average_fitness)), generational_average_fitness)
+        plt.legend()
         plt.savefig(f'{self.SAVE_DIR}/avg_fitness_over_generations.png', bbox_inches='tight')

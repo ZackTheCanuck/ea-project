@@ -10,12 +10,12 @@ from population_individual import *  # may want to remove this later
 # select a route to mutate inversely proportional to how often the route appears in the individual
 # this makes sense because it assumes there is some reason we have evolved to generate a route multiple times,
 # therefore it is more likely beneficial that we keep it
-def new_route(individual, all_routes, graph, start, end):
+def new_route(individual, all_routes, graph, spa_v, start, end):
     probabilities    = get_inverse_traffic_flow_probabilities(individual, all_routes)
     all_routes_index = np.random.choice(range(len(all_routes)), p=probabilities)
     route_to_replace = all_routes[all_routes_index]
     route_index      = individual.get_route_index(route_to_replace)
-    new_route        = shortest_path_algorithms.dijkstra(graph, start, end)
+    new_route        = spa_v(graph, start, end)
     individual.update_route_at_index(index=route_index, new_route=new_route)
     if new_route not in all_routes:
         all_routes.append(new_route)
@@ -23,7 +23,7 @@ def new_route(individual, all_routes, graph, start, end):
     return individual
 
 
-def random_p(individual, all_unique_routes, graph, start_node, end_node):
+def random_p(individual, all_unique_routes, graph, spa_v, start_node, end_node):
 
     # Choose a random subset of routes proportional to their inverse traffic flow
     probabilities = get_inverse_traffic_flow_probabilities(individual, all_unique_routes)
@@ -41,7 +41,7 @@ def random_p(individual, all_unique_routes, graph, start_node, end_node):
         subroute_length = max(min(abs(int(np.random.normal(0.25 * route_length, 0.5 * route_length))), max_subroute_length), 2)
         end_index = start_index + subroute_length - 1
         # Replace subsegment with a new random route
-        new_subroute = shortest_path_algorithms.dijkstra(graph, route[start_index], route[end_index])
+        new_subroute = spa_v(graph, route[start_index], route[end_index])
         new_route    = route[:start_index] + new_subroute[:-1] + route[end_index:]
         new_route    = remove_cycles(new_route)
         #print(route, new_subroute, new_route)
@@ -57,7 +57,7 @@ def random_p(individual, all_unique_routes, graph, start_node, end_node):
 
 # instead of using capacity (which our data doesn't have), we take the sum of our fitnesses along each edge going out of each node,
 # except the one we are currently using, and choose proportional to the fastest (lowest fitness) node
-def link_wp(individual, all_unique_routes, graph, start, end):
+def link_wp(individual, all_unique_routes, graph, spa_v, start, end):
     # Choose a random subset of routes proportional to their inverse traffic flow
     probabilities = get_inverse_traffic_flow_probabilities(individual, all_unique_routes)
     # Select a random subset of route indices from all_unique_routes based on probabilities
@@ -83,7 +83,7 @@ def link_wp(individual, all_unique_routes, graph, start, end):
         start_index  = min(selected_indexes)
         end_index    = max(selected_indexes)
         # Replace subsegment with a new random route
-        new_subroute = shortest_path_algorithms.dijkstra(graph, route[start_index], route[end_index])
+        new_subroute = spa_v(graph, route[start_index], route[end_index])
         new_route    = route[:start_index] + new_subroute[:-1] + route[end_index:]
         new_route    = remove_cycles(new_route)
         index        = individual.get_route_index(route)
@@ -96,7 +96,7 @@ def link_wp(individual, all_unique_routes, graph, start, end):
 
     return individual
 
-def ex_segment(individual, all_unique_routes, graph, start, end):         
+def ex_segment(individual, all_unique_routes, graph, spa_v, start, end):         
     """Outdated, works when get_routes() returns ndarray"""  
     # routes = individual.get_routes()      
     # r1, r2 = np.random.choice(len(routes), 2, replace=False)        # select two copied routes uniformly at random
