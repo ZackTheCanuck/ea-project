@@ -1,0 +1,10 @@
+Start node              = 13
+End node                = 6
+Number of runs          = 75
+Population size         = 5
+Crossover strategy      = <function exhaustive_crossover at 0x000001A77D205260>
+Shortest path algorithm = (<function dijkstra at 0x000001A77C33EF20>, <function dijkstra_variance at 0x000001A77C33F1A0>)
+Max generations per run = 200
+Number of islands       = 3
+Migration interval      = 10
+Number of migrants      = 1

@@ -1,0 +1,10 @@
+Start node              = 1
+End node                = 11
+Number of runs          = 75
+Population size         = 5
+Crossover strategy      = <function greedy_crossover at 0x000001D8C38753A0>
+Shortest path algorithm = (<function a_star at 0x000001D8C29AF060>, <function a_star_variance at 0x000001D8C29AF2E0>)
+Max generations per run = 200
+Number of islands       = 3
+Migration interval      = 10
+Number of migrants      = 1
