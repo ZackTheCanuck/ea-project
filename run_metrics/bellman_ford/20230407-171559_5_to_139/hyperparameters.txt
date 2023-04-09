@@ -1,0 +1,10 @@
+Start node              = 5
+End node                = 139
+Number of runs          = 75
+Population size         = 5
+Crossover strategy      = <function greedy_crossover at 0x134a8d820>
+Shortest path algorithm = (<function bellman_ford at 0x127294790>, <function bellman_ford_variance at 0x1272949d0>)
+Max generations per run = 200
+Number of islands       = 3
+Migration interval      = 10
+Number of migrants      = 1
